@@ -24,6 +24,10 @@ public class PlayerAction : MonoBehaviour {
     public int queuePos;
     public static bool activePlayer;
     private bool snappable;
+
+    //Audio source for snap
+    public AudioSource snap;
+
 	// Use this for initialization
 	void Start () {
         touchingUnits = new LinkedList<Collider>();
@@ -65,15 +69,22 @@ public class PlayerAction : MonoBehaviour {
         if (Input.GetKeyDown("space") && playerCollision.grounded)          //Jump
             GetComponent<Rigidbody>().AddForce(Vector3.up * JUMP_FORCE);
 
-        if(Input.GetKeyDown("return") && selected != null && snappable == true) {                //Select cube
-            player.position = selected.bounds.center;
-            selected.SendMessage("deselectUnit");
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
-            activePlayer = false;
-            //Send a message to your dispenser
-            GetComponent<PlayerAction>().enabled = false;
-        }
+        if (Input.GetKeyDown("return") && selected != null && snappable == true)               //Select cube
+            selectGridUnit();
 
+    }
+
+    //Does selection action
+    private void selectGridUnit() {
+        player.position = selected.bounds.center;       //Snaps player to nearest block
+        selected.SendMessage("deselectUnit");
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;  //Fixes block in place
+        activePlayer = false;
+
+        snap.Play();
+
+        //Send a message to your dispenser
+        Object.Destroy(GetComponent<PlayerAction>());
     }
 
     //Checks triggering grid units that touch player
