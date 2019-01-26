@@ -18,29 +18,36 @@ public class PlayerAction : MonoBehaviour {
 
     //Grid snapping
     private Collider selected;
-    private LinkedList<Collider> touchingUnits;
+    private HashSet<Collider> touchingUnits;
 
     //Global Variables
     public int queuePos;
     public static bool activePlayer;
     private bool snappable;
+
+    //Snap Audio
+    public AudioSource snap;
+
 	// Use this for initialization
 	void Start () {
-        touchingUnits = new LinkedList<Collider>();
+        touchingUnits = new HashSet<Collider>();
         playerCollision = GetComponent<CollisionSystem>();
         player = GetComponent<Transform>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
         //Set status
-        if (playerCollision.grounded)
+        if (playerCollision.grounded) {
             moveSpeed = GROUNDED_MOVEMENT;
-        else
+        }else{
             moveSpeed = AIR_MOVEMENT;
+        }
+
 
         //Check if selection has changed
-        if(selected == null || !selected.bounds.Contains(player.position)) {
+        if (selected == null || !selected.bounds.Contains(player.position)) {
             //Deselect unit
             if(selected != null)
                 selected.SendMessage("deselectUnit");
@@ -66,28 +73,33 @@ public class PlayerAction : MonoBehaviour {
             GetComponent<Rigidbody>().AddForce(Vector3.up * JUMP_FORCE);
 
         if(Input.GetKeyDown("return") && selected != null && snappable == true) {                //Select cube
-            player.position = selected.bounds.center;
-            selected.SendMessage("deselectUnit");
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
-            activePlayer = false;
-            //Send a message to your dispenser
-            GetComponent<PlayerAction>().enabled = false;
+            snapToUnit();
         }
 
     }
 
+    //Executes snapping to place
+    private void snapToUnit() {
+        //Fix position of cube to selected unit
+        player.position = selected.bounds.center;
+        selected.SendMessage("deselectUnit");
+        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+        activePlayer = false;
+
+        snap.Play();
+        //Send a message to your dispenser
+        Object.Destroy(GetComponent<PlayerAction>());
+    }
+
     //Checks triggering grid units that touch player
     void OnTriggerEnter(Collider other) {
-        if (other.tag == "GridUnit")
-        {
-            touchingUnits.AddLast(other);
+        if (other.tag == "GridUnit"){
+            touchingUnits.Add(other);
             //r/thanosdidnothingwrong
             snappable = true;
-        }
-        else if (other.tag == "outside")
-        {
+        }else if (other.tag == "outside"){
             snappable = false;
-            touchingUnits.AddLast(other);
+            touchingUnits.Add(other);
         }
     }
 
