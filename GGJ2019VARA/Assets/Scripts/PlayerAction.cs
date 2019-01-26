@@ -20,6 +20,10 @@ public class PlayerAction : MonoBehaviour {
     private Collider selected;
     private LinkedList<Collider> touchingUnits;
 
+    //Global Variables
+    public int queuePos;
+    public static bool activePlayer;
+    private bool snappable;
 	// Use this for initialization
 	void Start () {
         touchingUnits = new LinkedList<Collider>();
@@ -61,10 +65,11 @@ public class PlayerAction : MonoBehaviour {
         if (Input.GetKeyDown("space") && playerCollision.grounded)          //Jump
             GetComponent<Rigidbody>().AddForce(Vector3.up * JUMP_FORCE);
 
-        if(Input.GetKeyDown("return") && selected != null) {                //Select cube
+        if(Input.GetKeyDown("return") && selected != null && snappable == true) {                //Select cube
             player.position = selected.bounds.center;
             selected.SendMessage("deselectUnit");
             GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
+            activePlayer = false;
             //Send a message to your dispenser
             GetComponent<PlayerAction>().enabled = false;
         }
@@ -74,12 +79,21 @@ public class PlayerAction : MonoBehaviour {
     //Checks triggering grid units that touch player
     void OnTriggerEnter(Collider other) {
         if (other.tag == "GridUnit")
+        {
             touchingUnits.AddLast(other);
+            //r/thanosdidnothingwrong
+            snappable = true;
+        }
+        else if (other.tag == "outside")
+        {
+            snappable = false;
+            touchingUnits.AddLast(other);
+        }
     }
 
     //Checks when grid units no longer touch player
     void OnTriggerExit(Collider other) {
-        if (other.tag == "GridUnit")
+        if (other.tag == "GridUnit" || other.tag == "outside") 
             touchingUnits.Remove(other);
     }
 }

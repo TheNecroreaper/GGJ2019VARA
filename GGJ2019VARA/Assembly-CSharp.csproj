@@ -62,6 +62,8 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\CollisionSystem.cs" />
     <Compile Include="Assets\Scripts\Dispenser.cs" />
+    <Compile Include="Assets\Scripts\GridActivation.cs" />
+    <Compile Include="Assets\Scripts\NextQueue.cs" />
     <Compile Include="Assets\Scripts\PlayerAction.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
