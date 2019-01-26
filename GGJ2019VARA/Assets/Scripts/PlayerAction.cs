@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAction : MonoBehaviour {
+public class PlayerAction : MonoBehaviour
+{
 
     //Reference Variables
     private CollisionSystem playerCollision;
@@ -23,33 +24,39 @@ public class PlayerAction : MonoBehaviour {
     //Global Variables
     public int queuePos;
     public static bool activePlayer;
-    private bool snappable;
 
     //Snap Audio
     public AudioSource snap;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         touchingUnits = new HashSet<Collider>();
         playerCollision = GetComponent<CollisionSystem>();
         player = GetComponent<Transform>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        activePlayer = true;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
 
         //Set status
-        if (playerCollision.grounded) {
+        if (playerCollision.grounded)
+        {
             moveSpeed = GROUNDED_MOVEMENT;
-        }else{
+        }
+        else
+        {
             moveSpeed = AIR_MOVEMENT;
         }
 
 
         //Check if selection has changed
-        if (selected == null || !selected.bounds.Contains(player.position)) {
+        if (selected == null || !selected.bounds.Contains(player.position))
+        {
             //Deselect unit
-            if(selected != null)
+            if (selected != null)
                 selected.SendMessage("deselectUnit");
 
             //See which unit contains the center of the currentBlock
@@ -58,7 +65,7 @@ public class PlayerAction : MonoBehaviour {
                     selected = unit;
 
             //Select new unit
-            if(selected != null)
+            if (selected != null)
                 selected.SendMessage("selectUnit");
         }
 
@@ -72,14 +79,14 @@ public class PlayerAction : MonoBehaviour {
         if (Input.GetKeyDown("space") && playerCollision.grounded)          //Jump
             GetComponent<Rigidbody>().AddForce(Vector3.up * JUMP_FORCE);
 
-        if(Input.GetKeyDown("return") && selected != null && snappable == true) {                //Select cube
+        if (Input.GetKeyDown("return") && selected != null && selected.tag == "GridUnit")                //Select cube
             snapToUnit();
-        }
 
     }
 
     //Executes snapping to place
-    private void snapToUnit() {
+    private void snapToUnit()
+    {
         //Fix position of cube to selected unit
         player.position = selected.bounds.center;
         selected.SendMessage("deselectUnit");
@@ -88,24 +95,20 @@ public class PlayerAction : MonoBehaviour {
 
         snap.Play();
         //Send a message to your dispenser
-        Object.Destroy(GetComponent<PlayerAction>());
+        Destroy(this);
     }
 
     //Checks triggering grid units that touch player
-    void OnTriggerEnter(Collider other) {
-        if (other.tag == "GridUnit"){
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "GridUnit" || other.tag == "outside")
             touchingUnits.Add(other);
-            //r/thanosdidnothingwrong
-            snappable = true;
-        }else if (other.tag == "outside"){
-            snappable = false;
-            touchingUnits.Add(other);
-        }
     }
 
     //Checks when grid units no longer touch player
-    void OnTriggerExit(Collider other) {
-        if (other.tag == "GridUnit" || other.tag == "outside") 
+    void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "GridUnit" || other.tag == "outside")
             touchingUnits.Remove(other);
     }
 }
